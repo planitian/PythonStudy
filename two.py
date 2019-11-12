@@ -27,6 +27,11 @@ print(soup.select("html head title"))
 print(soup.select('.sister'))
 print(soup.select('#link1'))
 
+try:
+    print(soup['body']['a'])
+except Exception as ex:
+    print("出错啦" + str(ex))
+
 
 class bs:
 

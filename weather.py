@@ -4,6 +4,9 @@ import time
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 import threading
 import sched
 
@@ -25,14 +28,23 @@ class Weatherinfo:
         driver = webdriver.Chrome(options=driver_options)
         driver.maximize_window()
         self.driver = driver
+        # 设置 隐式等待 秒为单位  这个并不会得到完全的页面
+        # self.driver.implicitly_wait(100)
 
     def __del__(self):
         print("本身销毁")
 
     def info(self):
         self.driver.get(self.base_url)
-        time.sleep(10)
+        try:
+            # 显示等待
+            element = WebDriverWait(self.driver, 10, 0.5).until(
+                EC.presence_of_element_located((By.ID, 'pl_unlogin_home_hots')))  # 通过id 来查找
+        except Exception as ex:
+            print(ex)
+            return
         html = self.driver.page_source
+        # print(html)
         bs4 = BeautifulSoup(html, "html.parser")
         # print(bs4.prettify())
         ug = bs4.find('div', attrs={'class': 'WB_main_r'})
@@ -71,7 +83,7 @@ class Weatherinfo:
 def run():
     weather = Weatherinfo("https://weibo.com")
     weather.info()
-    t = threading.Timer(20, run)
+    t = threading.Timer(10, run)
     t.start()
 
 
@@ -83,5 +95,5 @@ def test():
 
 
 if __name__ == '__main__':
-    t = threading.Timer(20, run)
+    t = threading.Timer(0, run)
     t.start()
